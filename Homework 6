@@ -1,0 +1,166 @@
+//实现LED动画功能
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h> // 用于usleep函数
+#include <time.h> // 用于time和srand函数
+
+// 终端光标控制函数
+void hideCursor() {
+    printf("\033[?25l"); // 隐藏光标
+}
+
+void showCursor() {
+    printf("\033[?25h"); // 显示光标
+}
+
+// 清屏函数，适用于Unix/Linux系统
+void clearScreen() {
+    system("clear");
+}
+
+// 生成随机颜色的ANSI转义码
+void printColoredLED(int state) {
+    const char *colors[] = {
+        "\033[1;31m", // 红色
+        "\033[1;32m", // 绿色
+        "\033[1;33m", // 黄色
+        "\033[1;34m", // 蓝色
+        "\033[1;35m", // 紫色
+        "\033[1;36m"  // 青色
+    };
+    const char *backgrounds[] = {
+        "\033[41m", // 红色背景
+        "\033[42m", // 绿色背景
+        "\033[43m", // 黄色背景
+        "\033[44m", // 蓝色背景
+        "\033[45m", // 紫色背景
+        "\033[46m"  // 青色背景
+    };
+    if (state) {
+        int colorIndex = rand() % (sizeof(colors) / sizeof(colors[0]));
+        int backgroundIndex = rand() % (sizeof(backgrounds) / sizeof(backgrounds[0]));
+        printf("%s%sLED: ON\n\033[0m", backgrounds[backgroundIndex], colors[colorIndex]);
+    } else {
+        printf("\033[0mLED: OFF\n");
+    }
+}
+
+// 模拟LED动画
+void simulateLEDAnimation() {
+    srand(time(NULL)); // 初始化随机数种子
+    int ledState = 0; // 0表示熄灭，1表示点亮
+
+    while (1) {
+        clearScreen(); // 清屏
+        printColoredLED(ledState); // 打印彩色LED
+
+        ledState = !ledState; // 切换LED状态
+        usleep(500000); // 等待500毫秒
+    }
+}
+
+int main() {
+    hideCursor(); // 隐藏光标
+    simulateLEDAnimation();
+    showCursor(); // 显示光标
+    return 0;
+}
+//简易动画设计
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+// 定义结构体表示点（类似原代码中的Dot结构体，用于存储字符相关信息及坐标）
+typedef struct {
+    int x;
+    int y;
+    char c;
+} Dot;
+
+int len;
+Dot a[10000000];
+int vis[10000000];
+char c[5] = { 35, 36, 37, 38, 79 };
+char s[] = "/\\";
+int n;
+char me[] = "Merry Christmas!";
+char fm[] = "2024/12/19, create by [your name]";
+
+// 移动光标函数，利用ANSI转义序列将光标移动到指定坐标位置
+void getcur(int x, int y) {
+    printf("\033[%d;%dH", y, x);
+}
+
+// 输出字符并设置随机颜色（通过ANSI转义序列模拟颜色设置，简单设置前景色为16种颜色之一）
+void goprint(int x, int y, char c) {
+    int color = rand() % 16;
+    // 设置颜色的ANSI转义序列，格式为\033[38;5;<颜色代码>m，这里简化只用前景色
+    printf("\033[38;5;%dm", color);
+    getcur(x, y);
+    printf("%c", c);
+    // 恢复默认颜色，使用\033[0m转义序列
+    printf("\033[0m");
+}
+// 清除指定坐标位置的字符（通过输出空格实现）
+void del(int x, int y) {
+    getcur(x, y);
+    printf(" ");
+}
+
+int main() {
+    printf("请输入你喜欢的一个数字（10 - 17），并将终端窗口尽量调大：\n");
+    scanf("%d", &n);
+    while (n < 10 || n > 17) {
+        printf("输入有误，请重新输入：\n");
+        scanf("%d", &n);
+    }
+
+    int Layer = 2 * n - 1;
+    int Space = 2 * n - 2;
+    for (int i = 1; i <= Layer; ++i) {
+        if (i & 1) {
+            for (int j = 0; j < 2 * i; j += 2) {
+                a[len].x = j + Space + 30;
+                a[len].y = i + 5;
+                a[len++].c = c[rand() % 5];
+            }
+            Space -= 2;
+        } else {
+            int r = 0;
+            for (int j = 0; j < 2 * i; j += 2) {
+                a[len].x = j + Space + 31;
+                a[len].y = i + 5;
+                a[len++].c = s[r];
+                r = (r + 1) % 2;
+            }
+        }
+    }
+    for (int i = 0; i < Layer / 3 + 1; ++i) {
+        a[len].x = Layer + 29;
+        a[len].y = i + 6 + Layer;
+        a[len++].c = '|';
+   }
+    for (int i = 0; i < strlen(me); ++i) {
+        a[len].x = Layer - 1 + i + 30;
+        a[len].y = Layer / 3 + 10 + Layer;
+        a[len++].c = me[i];
+    }
+    for (int i = 0; i < strlen(fm); ++i) {
+        a[len].x = Layer - 1 + i + 30;
+        a[len].y = Layer / 3 + 11 + Layer;
+        a[len++].c = fm[i];
+    }
+
+    while (1) {
+        int i = rand() % len;
+        if ((a[i].c == '/' || a[i].c == '\\') && vis[i]) {
+            continue;
+        }
+        goprint(a[i].x, a[i].y, a[i].c);
+        vis[i] = 1;
+    }
+
+    return 0;
+}
+                                                                                                                                  70,1          58%
