@@ -1,0 +1,481 @@
+//实现井字棋双人对战版本
+#include <stdio.h>
+#include <stdlib.h>
+
+#define BOARD_SIZE 3
+
+// 打印棋盘
+void printBoard(char board[BOARD_SIZE][BOARD_SIZE]) {
+    system("clear"); // 或者在Windows下使用 system("cls");
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            printf("%c ", board[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+// 检查游戏是否结束
+int checkGameEnd(char board[BOARD_SIZE][BOARD_SIZE], char playerMark) {
+    // 检查行和列
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        if (board[i][0] == board[i][1] && board[i][1] == board[i][2] && board[i][0] != ' ') {
+            return 1;
+        }
+        if (board[0][i] == board[1][i] && board[1][i] == board[2][i] && board[0][i] != ' ') {
+            return 1;
+        }
+    }
+    // 检查对角线
+    if (board[0][0] == board[1][1] && board[1][1] == board[2][2] && board[0][0] != ' ') {
+        return 1;
+    }
+    if (board[0][2] == board[1][1] && board[1][1] == board[2][0] && board[0][2] != ' ') {
+        return 1;
+    }
+    // 检查是否还有空位
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            if (board[i][j] == ' ') {
+                return 0;
+            }
+        }
+    }
+    // 全部填满，没有胜者
+    return -1;
+}
+// 玩家落子
+void playerMove(char board[BOARD_SIZE][BOARD_SIZE], char playerMark) {
+    int row, col;
+    do {
+        printf("Player %c, enter your move (row col): ", playerMark);
+        scanf("%d %d", &row, &col);
+        row--; col--; // 将1-based index转换为0-based index
+    } while (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE || board[row][col] != ' ');
+
+    board[row][col] = playerMark;
+}
+
+int main() {
+    char board[BOARD_SIZE][BOARD_SIZE] = {{' ',' ',' '},
+                                         {' ',' ',' '},
+                                         {' ',' ',' '}};
+    char playerMark = 'X'; // 玩家标记
+    char opponentMark = 'O'; // 对手标记
+
+    while (1) {
+        printBoard(board);
+        playerMove(board, playerMark);
+
+        int gameStatus = checkGameEnd(board, playerMark);
+        if (gameStatus == 1) {
+            printBoard(board);
+            printf("Player %c wins!\n", playerMark);
+            break;
+        } else if (gameStatus == -1) {
+            printBoard(board);
+            printf("It's a draw!\n");
+            break;
+        }
+// 交换玩家
+        char tempMark = playerMark;
+        playerMark = opponentMark;
+        opponentMark = tempMark;
+
+        playerMove(board, playerMark);
+
+        gameStatus = checkGameEnd(board, playerMark);
+        if (gameStatus == 1) {
+            printBoard(board);
+            printf("Player %c wins!\n", playerMark);
+            break;
+        } else if (gameStatus == -1) {
+            printBoard(board);
+            printf("It's a draw!\n");
+            break;
+        }
+    }
+
+    return 0;
+}
+//井字棋人机对战版本
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define BOARD_SIZE 3
+
+// 打印棋盘
+void printBoard(char board[BOARD_SIZE][BOARD_SIZE]) {
+    #if defined(_WIN32) || defined(_WIN64)
+    system("cls");
+    #else
+    system("clear");
+    #endif
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            printf("%c ", board[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+// 检查游戏是否结束
+int checkGameEnd(char board[BOARD_SIZE][BOARD_SIZE], char playerMark, char aiMark) {
+    // 检查行和列
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        if (board[i][0] == board[i][1] && board[i][1] == board[i][2] && board[i][0] != ' ') {
+            return (board[i][0] == playerMark) ? 1 : 2;
+        }
+        if (board[0][i] == board[1][i] && board[1][i] == board[2][i] && board[0][i] != ' ') {
+            return (board[0][i] == playerMark) ? 1 : 2;
+        }
+    }
+    // 检查对角线
+    if (board[0][0] == board[1][1] && board[1][1] == board[2][2] && board[0][0] != ' ') {
+        return (board[0][0] == playerMark) ? 1 : 2;
+    }
+    if (board[0][2] == board[1][1] && board[1][1] == board[2][0] && board[0][2] != ' ') {
+        return (board[0][2] == playerMark) ? 1 : 2;
+    }
+// 检查是否还有空位
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            if (board[i][j] == ' ') {
+                return 0;
+            }
+        }
+    }
+    // 全部填满，没有胜者
+    return -1;
+}
+
+// AI落子
+void aiMove(char board[BOARD_SIZE][BOARD_SIZE], char aiMark) {
+    srand(time(NULL) + rand() % 1000); // 增加随机性
+    int row, col;
+    do {
+        row = rand() % BOARD_SIZE;
+        col = rand() % BOARD_SIZE;
+    } while (board[row][col] != ' ');
+    board[row][col] = aiMark;
+}
+// 玩家落子
+void playerMove(char board[BOARD_SIZE][BOARD_SIZE], char playerMark) {
+    int row, col;
+    do {
+        printf("Player %c, enter your move (row col): ", playerMark);
+        scanf("%d %d", &row, &col);
+        row--; col--; // 将1-based index转换为0-based index
+    } while (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE || board[row][col] != ' ');
+    board[row][col] = playerMark;
+}
+
+int main() {
+    char board[BOARD_SIZE][BOARD_SIZE] = {{' ',' ',' '},
+                                         {' ',' ',' '},
+                                         {' ',' ',' '}};
+    char playerMark = 'X';
+    char aiMark = 'O';
+
+    while (1) {
+        printBoard(board);
+        playerMove(board, playerMark);
+
+        int gameStatus = checkGameEnd(board, playerMark, aiMark);
+        if (gameStatus == 1) {
+            printBoard(board);
+            printf("Player %c wins!\n", playerMark);
+            break;
+        } else if (gameStatus == 2) {
+            printBoard(board);
+            printf("AI %c wins!\n", aiMark);
+            break;
+        } else if (gameStatus == -1) {
+            printBoard(board);
+            printf("It's a draw!\n");
+            break;
+        }
+
+        aiMove(board, aiMark);
+        gameStatus = checkGameEnd(board, playerMark, aiMark);
+        if (gameStatus == 1) {
+            printBoard(board);
+            printf("Player %c wins!\n", playerMark);
+            break;
+        } else if (gameStatus == 2) {
+            printBoard(board);
+            printf("AI %c wins!\n", aiMark);
+            break;
+        } else if (gameStatus == -1) {
+            printBoard(board);
+            printf("It's a draw!\n");
+            break;
+        }
+    }
+
+    return 0;
+}
+//五子棋双人对战版本
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define BOARD_SIZE 15
+
+// 初始化棋盘
+void initBoard(char board[BOARD_SIZE][BOARD_SIZE]) {
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            board[i][j] = '.';
+        }
+    }
+}
+
+// 打印棋盘
+void printBoard(char board[BOARD_SIZE][BOARD_SIZE]) {
+    system("clear"); // 清屏
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            printf("%c ", board[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+// 检查是否有玩家获胜
+int checkWinner(char board[BOARD_SIZE][BOARD_SIZE], char player) {
+    // 检查水平方向
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE - 4; j++) {
+            if (board[i][j] == player && board[i][j+1] == player && board[i][j+2] == player && board[i][j+3] == player && board[i][j+4] == player) {
+                return 1;
+            }
+        }
+    }
+    // 检查垂直方向
+    for (int i = 0; i < BOARD_SIZE - 4; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            if (board[i][j] == player && board[i+1][j] == player && board[i+2][j] == player && board[i+3][j] == player && board[i+4][j] == player) {
+                return 1;
+            }
+        }
+    }
+    // 检查正对角线方向
+    for (int i = 0; i < BOARD_SIZE - 4; i++) {
+        for (int j = 0; j < BOARD_SIZE - 4; j++) {
+            if (board[i][j] == player && board[i+1][j+1] == player && board[i+2][j+2] == player && board[i+3][j+3] == player && board[i+4][j+4] == player) {
+                return 1;
+            }
+        }
+    }
+    // 检查反对角线方向
+    for (int i = 4; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE - 4; j++) {
+            if (board[i][j] == player && board[i-1][j+1] == player && board[i-2][j+2] == player && board[i-3][j+3] == player && board[i-4][j+4] == player) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+// 检查是否平局
+int checkDraw(char board[BOARD_SIZE][BOARD_SIZE]) {
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            if (board[i][j] == '.') {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+// 玩家落子
+void playerMove(char board[BOARD_SIZE][BOARD_SIZE], char player) {
+    int row, col;
+    printf("Player %c, enter your move (row col): ", player);
+    scanf("%d %d", &row, &col);
+    row--; col--; // 将1-based index转换为0-based index
+
+    if (board[row][col] != '.') {
+        printf("Invalid move, try again.\n");
+        playerMove(board, player);
+    } else {
+        board[row][col] = player;
+    }
+}
+// 游戏主函数
+void playGame() {
+    char board[BOARD_SIZE][BOARD_SIZE];
+    initBoard(board);
+    char player = 'X';
+
+    while (1) {
+        printBoard(board);
+        playerMove(board, player);
+
+        if (checkWinner(board, player)) {
+            printBoard(board);
+            printf("Player %c wins!\n", player);
+            break;
+        }
+
+        if (checkDraw(board)) {
+            printBoard(board);
+            printf("It's a draw!\n");
+            break;
+        }
+
+        player = (player == 'X') ? 'O' : 'X';
+    }
+}
+
+int main() {
+    system("clear"); // 清屏
+    playGame();
+    return 0;
+}
+//五子棋人机对战
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define BOARD_SIZE 15
+
+// 初始化棋盘
+void initBoard(char board[BOARD_SIZE][BOARD_SIZE]) {
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            board[i][j] = '.';
+        }
+    }
+}
+
+// 打印棋盘
+void printBoard(char board[BOARD_SIZE][BOARD_SIZE]) {
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            printf("%c ", board[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+// 检查是否有玩家获胜
+int checkWinner(char board[BOARD_SIZE][BOARD_SIZE], char player) {
+    // 检查水平方向
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE - 4; j++) {
+            if (board[i][j] == player && board[i][j+1] == player && board[i][j+2] == player && board[i][j+3] == player && board[i][j+4] == player) {
+                return 1;
+            }
+        }
+    }
+   // 检查垂直方向
+    for (int i = 0; i < BOARD_SIZE - 4; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            if (board[i][j] == player && board[i+1][j] == player && board[i+2][j] == player && board[i+3][j] == player && board[i+4][j] == player) {
+                return 1;
+            }
+        }
+    }
+    // 检查正对角线方向
+    for (int i = 0; i < BOARD_SIZE - 4; i++) {
+        for (int j = 0; j < BOARD_SIZE - 4; j++) {
+            if (board[i][j] == player && board[i+1][j+1] == player && board[i+2][j+2] == player && board[i+3][j+3] == player && board[i+4][j+4] == player) {
+                return 1;
+            }
+        }
+    }
+    // 检查反对角线方向
+    for (int i = 4; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE - 4; j++) {
+            if (board[i][j] == player && board[i-1][j+1] == player && board[i-2][j+2] == player && board[i-3][j+3] == player && board[i-4][j+4] == player) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+// 检查是否平局
+int checkDraw(char board[BOARD_SIZE][BOARD_SIZE]) {
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            if (board[i][j] == '.') {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+// AI落子
+void aiMove(char board[BOARD_SIZE][BOARD_SIZE], char aiMark) {
+    srand(time(NULL));
+    while (1) {
+        int row = rand() % BOARD_SIZE;
+        int col = rand() % BOARD_SIZE;
+        if (board[row][col] == '.') {
+            board[row][col] = aiMark;
+            break;
+        }
+    }
+}
+
+// 玩家落子
+void playerMove(char board[BOARD_SIZE][BOARD_SIZE], char playerMark) {
+    int row, col;
+    printf("Player %c, enter your move (row col): ", playerMark);
+    scanf("%d %d", &row, &col);
+    row--; col--; // 将1-based index转换为0-based index
+if (board[row][col] != '.') {
+        printf("Invalid move, try again.\n");
+        playerMove(board, playerMark);
+    } else {
+        board[row][col] = playerMark;
+    }
+}
+
+// 游戏主函数
+void playGame() {
+    char board[BOARD_SIZE][BOARD_SIZE];
+    initBoard(board);
+    char playerMark = 'X';
+    char aiMark = 'O';
+
+    while (1) {
+        printBoard(board);
+        playerMove(board, playerMark);
+
+        if (checkWinner(board, playerMark)) {
+            printBoard(board);
+            printf("Player %c wins!\n", playerMark);
+            break;
+        }
+
+        if (checkDraw(board)) {
+            printBoard(board);
+            printf("It's a draw!\n");
+            break;
+        }
+        aiMove(board, aiMark);
+
+        if (checkWinner(board, aiMark)) {
+            printBoard(board);
+            printf("AI %c wins!\n", aiMark);
+            break;
+        }
+
+        if (checkDraw(board)) {
+            printBoard(board);
+            printf("It's a draw!\n");
+            break;
+        }
+    }
+}
+
+int main() {
+    playGame();
+    return 0;
+}
