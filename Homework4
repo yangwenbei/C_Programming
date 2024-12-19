@@ -1,0 +1,191 @@
+//补全代码
+#include<stdio.h>
+
+int main(){
+    long x = 1; // 这行代码中的变量x并未在程序中使用，可以去掉
+    printf("C!YYDS!");
+    return 0;
+}
+//2题
+//gcc -c module.c -o module.o
+//gcc main.c module.o -o program
+//./program
+//非递归版的链表空间释放函数
+#include <stdio.h>
+#include <stdlib.h>
+
+// 假设链表节点的结构定义如下：
+typedef struct list_item {
+    int data;               // 节点存储的数据
+    struct list_item *next; // 指向下一个节点的指针
+} list_item;
+
+// 非递归版本的链表空间释放函数
+void erase_list(list_item *head) {
+    list_item *current = head; // 指向当前节点的指针
+    list_item *next_node;      // 临时指针，用于存储下一个节点的地址
+
+    // 遍历链表直到到达末尾
+    while (current != NULL) {
+        next_node = current->next; // 保存下一个节点的地址
+        free(current);             // 释放当前节点的内存
+        current = next_node;       // 移动到下一个节点
+    }
+}
+
+// 主函数，用于演示erase_list函数的使用
+int main() {
+    // 创建一个简单的链表：1 -> 2 -> 3 -> NULL
+    list_item *head = (list_item *)malloc(sizeof(list_item));
+    head->data = 1;
+    head->next = (list_item *)malloc(sizeof(list_item));
+    head->next->data = 2;
+    head->next->next = (list_item *)malloc(sizeof(list_item));
+    head->next->next->data = 3;
+    head->next->next->next = NULL;
+    // 释放链表内存
+    erase_list(head);
+
+    return 0;
+}
+//4题
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_LINES 100
+#define MAX_WORDS 1000
+#define MAX_WORD_LENGTH 100
+#define END_STRING "END"
+
+typedef struct {
+    char word[MAX_WORD_LENGTH];
+    int line_counts[MAX_LINES];  // 单词在每一行出现的次数
+    int total_count;              // 单词总共出现的次数
+} WordInfo;
+
+int compare(const void *a, const void *b) {
+    return strcmp(((const WordInfo *)a)->word, ((const WordInfo *)b)->word);
+}
+
+void to_lowercase(char *str) {
+    while (*str) {
+        *str = tolower((unsigned char)*str);
+        str++;
+    }
+}
+
+int is_word_char(char ch) {
+    return isalpha(ch) || ch == '\'';
+}
+
+void process_line(char *line, WordInfo words[], int *word_count, int line_num) {
+    char *word = NULL;
+    int in_word = 0;
+    int i;
+    int j;
+
+    for (int j = 0; line[j]; j++) {
+        if (is_word_char(line[j])) {
+            if (!in_word) {
+                in_word = 1;
+                word = &line[j];
+            }
+        } else {
+            if (in_word) {
+                line[j] = '\0'; // Mark the end of the word
+                to_lowercase(word);
+                for (i = 0; i < *word_count; i++) {
+                    if (strcmp(words[i].word, word) == 0) {
+                        words[i].line_counts[line_num]++;
+                        words[i].total_count++;
+                        break;
+                    }
+                }
+                if (i == *word_count) {
+                    strcpy(words[*word_count].word, word);
+                    memset(words[*word_count].line_counts, 0, sizeof(int) * MAX_LINES);
+                    words[*word_count].line_counts[line_num]++;
+                    words[*word_count].total_count++;
+                    (*word_count)++;
+                }
+                in_word = 0;
+            }
+        }
+    }
+    if (in_word) {
+        line[j] = '\0'; // Mark the end of the last word in the line
+        to_lowercase(word);
+        for (i = 0; i < *word_count; i++) {
+            if (strcmp(words[i].word, word) == 0) {
+                words[i].line_counts[line_num]++;
+                words[i].total_count++;
+                break;
+            }
+        }
+        if (i == *word_count) {
+            strcpy(words[*word_count].word, word);
+            memset(words[*word_count].line_counts, 0, sizeof(int) * MAX_LINES);
+            words[*word_count].line_counts[line_num]++;
+            words[*word_count].total_count++;
+            (*word_count)++;
+        }
+    }
+}
+int main() {
+    char lines[MAX_LINES][MAX_WORD_LENGTH];
+    WordInfo words[MAX_WORDS];
+    int word_count = 0;
+    char input[MAX_WORD_LENGTH * 2];
+    int line_num = 0; // Line number counter
+
+    printf("Enter lines (type 'END' to finish):\n");
+
+    while (1) {
+        if (!fgets(input, sizeof(input), stdin)) {
+            break;
+        }
+        input[strcspn(input, "\n")] = 0; // Remove newline character
+
+        if (strcmp(input, END_STRING) == 0) {
+            break;
+        }
+
+        strncpy(lines[line_num], input, MAX_WORD_LENGTH - 1);
+        line_num++;
+
+        process_line(lines[line_num - 1], words, &word_count, line_num - 1);
+    }
+
+    qsort(words, word_count, sizeof(WordInfo), compare);
+    printf("\nWord counts:\n");
+    for (int i = 0; i < word_count; i++) {
+        printf("%s: ", words[i].word);
+        for (int j = 0; j < line_num; j++) {
+            if (words[i].line_counts[j] > 0) {
+                printf("Line %d: %d, ", j + 1, words[i].line_counts[j]);
+            }
+        }
+        printf("Total: %d\n", words[i].total_count);
+    }
+
+    return 0;
+}
+//改写6题
+#include <stdio.h>
+
+char f(char (*pp)[5]) {
+    return pp[1][2];
+}
+
+int main() {
+    char B[20][5]; // 正确地定义B为一个二维数组
+    B[1][2] = 'X'; // 初始化B[1][2]为'X'
+    char result = f(B);
+    printf("The returned value is: %c\n", result);
+    return 0;
+}
+
+                                                                                          
+                                                                                                          
